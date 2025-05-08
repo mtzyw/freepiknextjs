@@ -56,7 +56,7 @@ export default function DownloadPage() {
     if (!token || !cardNumber) return;
     
     try {
-      const res = await fetch(`http://localhost:3000/api/user/${cardNumber}`, {
+      const res = await fetch(`https://freepikapi.shayudata.com/api/user/${cardNumber}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await res.json();
@@ -75,7 +75,7 @@ export default function DownloadPage() {
     setLoading(true);
     try {
       const res = await fetch(
-        `http://localhost:3000/api/my-images?page=${p}&pageSize=${pageSize}`,
+        `https://freepikapi.shayudata.com/api/my-images?page=${p}&pageSize=${pageSize}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       const result = await res.json();
@@ -154,7 +154,7 @@ export default function DownloadPage() {
 
     try {
       const token = localStorage.getItem('token')!;
-      const res = await fetch('http://localhost:3000/api/freepik/download', {
+      const res = await fetch('https://freepikapi.shayudata.com/api/freepik/download', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -169,7 +169,7 @@ export default function DownloadPage() {
 
       const taskId = result.data.taskId;
       const poll = async () => {
-        const r = await fetch(`http://localhost:3000/api/task/${taskId}`, {
+        const r = await fetch(`https://freepikapi.shayudata.com/api/task/${taskId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const tr = await r.json();
