@@ -2,16 +2,39 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+interface User {
+  id: string;
+  cardNumber: string;
+  cardValidDays: number;
+  cardFirstUsedAt: string;
+  cardExpiresAt: string;
+  downloadLimit: number;
+  dailyDownloads: number;
+  dailyDownloadsDate: string;
+  totalDownloadLimit: number;
+  totalDownloads: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Record {
+  id: string;
+  filename: string;
+  sourceUrl: string;
+  url: string;
+  createdAt: string;
+}
+
 export default function DownloadPage() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [resourceUrl, setResourceUrl] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState('');
   const [fileName, setFileName] = useState('');
 
-  const [records, setRecords] = useState<any[]>([]);
+  const [records, setRecords] = useState<Record[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const pageSize = 10;
@@ -20,7 +43,7 @@ export default function DownloadPage() {
     const token = localStorage.getItem('token');
     const cardNumber = localStorage.getItem('cardNumber');
     if (!token || !cardNumber) {
-      router.replace('/login');
+      router.push('/login');
       return;
     }
     fetchUserInfo();
@@ -31,11 +54,20 @@ export default function DownloadPage() {
     const token = localStorage.getItem('token');
     const cardNumber = localStorage.getItem('cardNumber');
     if (!token || !cardNumber) return;
-    const res = await fetch(`http://localhost:3000/api/user/${cardNumber}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const result = await res.json();
-    if (result.code === 0) setUser(result.data);
+    
+    try {
+      const res = await fetch(`http://localhost:3000/api/user/${cardNumber}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const result = await res.json();
+      if (result.code === 0) {
+        setUser(result.data);
+      } else {
+        console.error('获取用户信息失败:', result.message);
+      }
+    } catch (err) {
+      console.error('获取用户信息失败:', err);
+    }
   };
 
   const fetchRecords = async (p: number) => {
@@ -169,6 +201,15 @@ export default function DownloadPage() {
     }
   };
 
+  const isValidUrl = (url: string) => {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   return (
     <div style={styles.container}>
       {user && (
@@ -244,7 +285,11 @@ export default function DownloadPage() {
           {records.map(item => (
             <tr key={item.id}>
               <td style={styles.td}>
-                <a href={item.sourceUrl} target="_blank" rel="noopener noreferrer">{item.filename}</a>
+                {isValidUrl(item.sourceUrl) ? (
+                  <a href={item.sourceUrl} target="_blank" rel="noopener noreferrer">{item.filename}</a>
+                ) : (
+                  item.filename
+                )}
               </td>
               <td style={styles.td}><span style={styles.tag}>成功</span></td>
               <td style={styles.td}>
